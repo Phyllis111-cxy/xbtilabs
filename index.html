@@ -1,0 +1,1063 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#05080c">
+  <meta name="description" content="进入《达芬奇密码》的谜局，解锁你的专属侦探人格档案。">
+  <title>《达芬奇密码》侦探人格测试</title>
+  <style>
+    :root {
+      --bg: #05080c;
+      --panel: #16120f;
+      --panel-deep: #0f0c0a;
+      --title: #f4ebe0;
+      --body: #d9cfc3;
+      --muted: #9a8f84;
+      --accent: #8d302c;
+      --accent-bright: #ad423b;
+      --gold: #c6a15b;
+      --gold-dim: #8a7040;
+      --border: #3a322b;
+      --paper: #f3eadc;
+      --ink: #171513;
+      --sans: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+      --serif: "Songti SC", "STSong", "Noto Serif CJK SC", serif;
+      --stage-max: 430px;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body {
+      min-width: 320px;
+      min-height: 100%;
+      margin: 0;
+      overflow-x: hidden;
+      background: var(--bg);
+      color: var(--body);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    button, a { font: inherit; }
+    button { color: inherit; }
+    [hidden] { display: none !important; }
+
+    .app {
+      min-height: 100dvh;
+      display: grid;
+      place-items: start center;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(198,161,91,.08), transparent 55%),
+        var(--bg);
+    }
+
+    .view { width: 100%; min-height: 100dvh; }
+
+    /* —— 首页：2:3 舞台 + 透明热区 —— */
+    .home {
+      display: grid;
+      place-items: center;
+      min-height: 100dvh;
+      padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+    }
+    .home-stage {
+      position: relative;
+      width: min(100%, var(--stage-max));
+      aspect-ratio: 2 / 3;
+      max-height: calc(100dvh - 24px);
+      background: #0a0908;
+      box-shadow: 0 0 0 1px rgba(198,161,91,.18), 0 18px 48px rgba(0,0,0,.45);
+      overflow: hidden;
+    }
+    .home-stage img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+      user-select: none;
+      pointer-events: none;
+    }
+    .home-start-hotspot {
+      position: absolute;
+      left: 29%;
+      top: 80.5%;
+      width: 42%;
+      height: 8.5%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 0;
+    }
+    .home-start-hotspot:active { transform: translateY(2px); filter: brightness(1.08); }
+    .home-start-hotspot:focus { outline: none; }
+    .home-start-hotspot:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    /* —— 通用壳层 —— */
+    .shell {
+      width: min(100% - 28px, var(--stage-max));
+      margin: 0 auto;
+      padding: max(20px, env(safe-area-inset-top)) 0 max(40px, env(safe-area-inset-bottom));
+    }
+
+    .pixel-button {
+      display: inline-flex;
+      min-height: 48px;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid var(--gold-dim);
+      border-radius: 0;
+      padding: 12px 18px;
+      background: #1a1512;
+      color: var(--title);
+      cursor: pointer;
+      font-weight: 650;
+      letter-spacing: .04em;
+      text-decoration: none;
+      box-shadow: 3px 3px 0 #000;
+      clip-path: polygon(0 6px, 6px 6px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 6px), 0 calc(100% - 6px));
+    }
+    .pixel-button:hover { border-color: var(--gold); color: #fff; }
+    .pixel-button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+    .pixel-button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .pixel-button.buy {
+      background: var(--accent);
+      border-color: #5c1c1a;
+      color: #fffaf2;
+    }
+    .pixel-button.buy:hover { background: var(--accent-bright); }
+    .pixel-button.secondary {
+      background: transparent;
+      color: var(--body);
+    }
+    .pixel-button:focus-visible,
+    .option:focus-visible,
+    .match-item:focus-visible,
+    .pixel-back:focus-visible,
+    .icon-button:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    .pixel-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      margin-bottom: 16px;
+      border: 2px solid var(--border);
+      background: var(--panel);
+      color: var(--title);
+      cursor: pointer;
+      box-shadow: 2px 2px 0 #000;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--gold);
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .file-panel {
+      border: 2px solid var(--border);
+      background: linear-gradient(180deg, #1b1613, #120f0d);
+      padding: 22px 18px;
+      box-shadow: 4px 4px 0 #000;
+    }
+    .file-panel h1 {
+      margin: 0 0 14px;
+      color: var(--title);
+      font: 700 28px/1.25 var(--serif);
+    }
+    .file-panel p {
+      margin: 0 0 12px;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--body);
+    }
+    .file-panel .pixel-button { margin-top: 18px; }
+
+    /* —— 分析页 —— */
+    .analyzing {
+      display: grid;
+      place-items: center;
+      min-height: 100dvh;
+      padding: 24px;
+    }
+    .analyzing-card {
+      width: min(100%, 360px);
+      border: 2px solid var(--gold-dim);
+      background: var(--panel);
+      padding: 28px 22px;
+      box-shadow: 4px 4px 0 #000;
+      position: relative;
+      overflow: hidden;
+    }
+    .analyzing-card::before {
+      content: "";
+      position: absolute;
+      left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      animation: scan 1.4s linear infinite;
+    }
+    @keyframes scan {
+      from { top: 0; opacity: .2; }
+      to { top: 100%; opacity: .8; }
+    }
+    .analyzing-card h1 {
+      margin: 8px 0 16px;
+      font: 700 24px/1.3 var(--serif);
+      color: var(--title);
+    }
+    .analyzing-card ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .analyzing-card li {
+      position: relative;
+      padding: 8px 0 8px 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .analyzing-card li::before {
+      content: "▣";
+      position: absolute;
+      left: 0;
+      color: var(--gold);
+    }
+    .analyzing-card li.active { color: var(--title); }
+
+    /* —— 答题 —— */
+    .quiz-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .progress-label {
+      color: var(--gold);
+      font-size: 13px;
+      letter-spacing: .08em;
+      white-space: nowrap;
+    }
+    .progress-track {
+      flex: 1;
+      height: 8px;
+      background: #2a241f;
+      border: 1px solid var(--border);
+      box-shadow: inset 0 0 0 1px #000;
+    }
+    .progress-bar {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--gold);
+      transition: width .2s steps(8);
+    }
+    .question-index {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: .08em;
+    }
+    .question-title {
+      margin: 0 0 12px;
+      color: var(--title);
+      font: 700 26px/1.25 var(--serif);
+    }
+    .question-body {
+      margin: 0 0 20px;
+      font-size: 15px;
+      line-height: 1.75;
+    }
+    .options { display: grid; gap: 10px; }
+    .option {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 12px;
+      align-items: start;
+      width: 100%;
+      padding: 14px;
+      border: 2px solid var(--border);
+      background: var(--panel);
+      color: var(--body);
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 #000;
+    }
+    .option[aria-pressed="true"] {
+      border-color: var(--gold);
+      background: #241c14;
+      box-shadow: 3px 3px 0 #5a4520;
+    }
+    .option.stamped { animation: stamp .24s steps(4); }
+    @keyframes stamp {
+      0% { transform: scale(1); }
+      40% { transform: scale(.985); filter: brightness(1.15); }
+      100% { transform: scale(1); }
+    }
+    .option-letter {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .quiz-actions {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    /* —— 结果 —— */
+    .result-shell { width: min(100% - 24px, 480px); }
+    .archive-kicker {
+      margin: 0 0 6px;
+      color: var(--gold);
+      font-size: 12px;
+      letter-spacing: .16em;
+    }
+    .result-heading {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .persona-lead {
+      display: grid;
+      gap: 18px;
+      padding: 18px 0 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .persona-dim { margin: 0 0 8px; color: var(--gold); font-size: 13px; font-weight: 650; }
+    .persona-name { margin: 0 0 14px; color: var(--title); font: 700 clamp(28px, 7vw, 40px)/1.15 var(--serif); }
+    .persona-intro p, .ai-copy p { margin: 0 0 8px; font-size: 15px; line-height: 1.75; }
+    .persona-intro p:last-child, .ai-copy p:last-child { margin-bottom: 0; }
+    .persona-image {
+      display: block;
+      width: min(100%, 360px);
+      margin: 0 auto;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      border: 2px solid var(--border);
+      background: var(--panel-deep);
+      image-rendering: pixelated;
+      box-shadow: 4px 4px 0 #000;
+    }
+    .result-section { padding: 28px 0; border-bottom: 1px solid var(--border); }
+    .section-title {
+      margin: 0 0 14px;
+      color: var(--title);
+      font: 700 18px/1.3 var(--serif);
+    }
+    .diagnosis-grid { display: grid; gap: 10px; margin-bottom: 16px; }
+    .diagnosis-item {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      padding: 12px 14px;
+    }
+    .diagnosis-label { display: block; margin-bottom: 6px; color: var(--gold); font-size: 12px; letter-spacing: .08em; }
+    .diagnosis-value { margin: 0; font-size: 14px; line-height: 1.6; }
+    .stats { margin: 0; display: grid; gap: 8px; }
+    .stat {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px dashed rgba(154,143,132,.25);
+    }
+    .stat dt { margin: 0; color: var(--muted); font-size: 13px; }
+    .stat dd { margin: 0; color: var(--title); font-size: 13px; font-weight: 650; text-align: right; }
+    .match-list { display: grid; gap: 10px; }
+    .match-item {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 12px;
+      width: 100%;
+      padding: 14px;
+      border: 2px solid var(--border);
+      background: var(--panel);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .match-number { color: var(--gold); font-weight: 700; }
+    .match-name { display: block; margin-bottom: 4px; color: var(--title); font-weight: 650; }
+    .match-blurb { display: block; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .result-actions { display: grid; gap: 10px; padding-top: 28px; }
+    .restart { margin-top: 12px; }
+    .bridge-copy {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    dialog {
+      width: min(100% - 32px, 420px);
+      border: 2px solid var(--gold-dim);
+      background: #16120f;
+      color: var(--body);
+      padding: 0;
+      box-shadow: 6px 6px 0 #000;
+    }
+    dialog::backdrop { background: rgba(0,0,0,.72); }
+    .dialog-inner { position: relative; padding: 24px 20px 20px; }
+    .icon-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border);
+      background: var(--panel-deep);
+      color: var(--title);
+      cursor: pointer;
+    }
+    .dialog-number { margin: 0 0 6px; color: var(--gold); font-size: 12px; letter-spacing: .1em; }
+    .dialog-title { margin: 0 0 10px; color: var(--title); font: 700 22px/1.3 var(--serif); }
+    .dialog-copy { margin: 0 0 16px; font-size: 14px; line-height: 1.65; }
+    .match-detail { margin-bottom: 12px; }
+    .match-label { display: block; margin-bottom: 4px; color: var(--gold); font-size: 12px; }
+    .match-detail p { margin: 0; font-size: 14px; line-height: 1.6; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 40;
+      max-width: min(90vw, 360px);
+      padding: 12px 16px;
+      border: 2px solid var(--gold-dim);
+      background: #1a1512;
+      color: var(--title);
+      font-size: 14px;
+      box-shadow: 3px 3px 0 #000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    .toast.show { opacity: 1; }
+
+    @media (min-width: 720px) {
+      .persona-lead { grid-template-columns: minmax(0, 1fr) 160px; align-items: start; }
+      .persona-image { width: 160px; margin: 24px 0 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="view home" data-view="home" aria-label="首页">
+      <div class="home-stage">
+        <img src="assets/home-scene.png" alt="《达芬奇密码》侦探人格测试，进入深夜博物馆开始调查" width="1024" height="1536">
+        <button class="home-start-hotspot" id="startButton" type="button" aria-label="开始侦探人格测试">
+          <span class="sr-only">开始测试</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="view" data-view="brief" aria-label="测试说明" hidden>
+      <div class="shell">
+        <button class="pixel-back" id="briefBackButton" type="button" aria-label="返回首页">←</button>
+        <div class="file-panel">
+          <p class="eyebrow">CONFIDENTIAL · 调查说明</p>
+          <h1>临时调查员须知</h1>
+          <p id="briefIntro"></p>
+          <p>共 10 道情境题。请按第一反应选择；人格没有高低，也无须读过原著，全程无剧透。</p>
+          <button class="pixel-button" id="beginButton" type="button">接受调查</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" data-view="quiz" aria-label="答题" hidden>
+      <div class="shell">
+        <button class="pixel-back" id="quizBackButton" type="button" aria-label="返回上一题">←</button>
+        <header class="quiz-head">
+          <span class="progress-label" id="progressLabel">01 / 10</span>
+          <span class="progress-track" aria-hidden="true"><span class="progress-bar" id="progressBar"></span></span>
+        </header>
+        <article aria-live="polite">
+          <p class="question-index" id="questionIndex">调查现场 01</p>
+          <h1 class="question-title" id="questionTitle"></h1>
+          <p class="question-body" id="questionBody"></p>
+          <div class="options" id="options"></div>
+          <div class="quiz-actions">
+            <button class="pixel-button secondary" id="prevButton" type="button">上一题</button>
+            <button class="pixel-button" id="nextButton" type="button" disabled>下一题</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="view analyzing" data-view="analyzing" aria-label="分析中" hidden>
+      <div class="analyzing-card" aria-live="polite">
+        <p class="eyebrow">AI 人格探案局</p>
+        <h1>正在生成侦探档案</h1>
+        <ul id="analyzingList">
+          <li data-step="0">扫描选择偏好</li>
+          <li data-step="1">校验证据链</li>
+          <li data-step="2">匹配调查人格</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="view" data-view="result" aria-label="结果" hidden>
+      <div class="shell result-shell">
+        <button class="pixel-back" id="restartButton" type="button" aria-label="重新测试">←</button>
+        <p class="archive-kicker">人格探案局</p>
+        <h1 class="result-heading">—— 你的探索人格是 ——</h1>
+
+        <section class="persona-lead">
+          <div>
+            <p class="persona-dim" id="personaDim"></p>
+            <h2 class="persona-name" id="personaName"></h2>
+            <div class="persona-intro" id="personaIntro"></div>
+          </div>
+          <img class="persona-image" id="personaImage" alt="">
+        </section>
+
+        <section class="result-section">
+          <h2 class="section-title">▣ AI 探案评价</h2>
+          <div class="ai-copy" id="aiCopy"></div>
+        </section>
+
+        <div class="result-actions">
+          <button class="pixel-button secondary" id="shareButton" type="button">▣ 生成分享卡图片</button>
+          <button class="pixel-button buy" id="purchaseButton" type="button">▤ 前往购买《达芬奇密码》</button>
+          <p class="bridge-copy">测试只能识别你的调查方式，真正的谜局仍在原著中。</p>
+        </div>
+
+        <section class="result-section">
+          <h2 class="section-title">完整侦探档案</h2>
+          <div class="diagnosis-grid" id="diagnosisGrid"></div>
+          <dl class="stats" id="diagnosisStats"></dl>
+        </section>
+
+        <section class="result-section">
+          <h2 class="section-title">相似侦探</h2>
+          <div class="match-list" id="matchList"></div>
+        </section>
+
+        <button class="pixel-button restart" id="restartBottomButton" type="button">重新测试</button>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="matchDialog" aria-labelledby="matchDialogTitle">
+    <div class="dialog-inner">
+      <button class="icon-button" id="closeDialogButton" type="button" aria-label="关闭">×</button>
+      <p class="dialog-number" id="matchDialogNumber"></p>
+      <h2 class="dialog-title" id="matchDialogTitle"></h2>
+      <p class="dialog-copy" id="matchDialogBlurb"></p>
+      <div id="matchDialogDetails"></div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <canvas id="shareCanvas" width="1080" height="1440" hidden aria-hidden="true"></canvas>
+
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+
+  <script src="content.js"></script>
+  <script src="scoring.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var QUESTIONS = XBTIContent.QUESTIONS;
+      var PERSONAS = XBTIContent.PERSONAS;
+      var INTRO = XBTIContent.INTRO;
+      var PERSONA_ORDER = ['o', 'l', 'i', 'a', 'v', 's', 'villain', 'committee'];
+      var PURCHASE_URL = '';
+      var STORAGE_KEY = 'xbti-davinci-session-v1';
+      var CONTENT_VERSION = '2026-08-05';
+
+      var state = {
+        view: 'home',
+        index: 0,
+        selected: null,
+        answers: [],
+        result: null
+      };
+
+      var views = Array.prototype.slice.call(document.querySelectorAll('[data-view]'));
+      var startButton = document.getElementById('startButton');
+      var beginButton = document.getElementById('beginButton');
+      var nextButton = document.getElementById('nextButton');
+      var prevButton = document.getElementById('prevButton');
+      var quizBackButton = document.getElementById('quizBackButton');
+      var briefBackButton = document.getElementById('briefBackButton');
+      var restartButton = document.getElementById('restartButton');
+      var restartBottomButton = document.getElementById('restartBottomButton');
+      var shareButton = document.getElementById('shareButton');
+      var purchaseButton = document.getElementById('purchaseButton');
+      var matchDialog = document.getElementById('matchDialog');
+      var toastEl = document.getElementById('toast');
+      var toastTimer = null;
+      var analyzeTimer = null;
+
+      document.getElementById('briefIntro').textContent = INTRO;
+
+      function pad(value) { return String(value).padStart(2, '0'); }
+
+      function showToast(message) {
+        toastEl.textContent = message;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+      }
+
+      function clearSession() {
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+      }
+
+      function saveSession() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            version: CONTENT_VERSION,
+            index: state.index,
+            answers: state.answers,
+            selected: state.selected,
+            view: state.view === 'analyzing' || state.view === 'result' ? state.view : 'quiz'
+          }));
+        } catch (e) {}
+      }
+
+      function loadSession() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return null;
+          var data = JSON.parse(raw);
+          if (!data || data.version !== CONTENT_VERSION) {
+            clearSession();
+            return null;
+          }
+          if (!Array.isArray(data.answers) || data.answers.length > QUESTIONS.length) {
+            clearSession();
+            return null;
+          }
+          return data;
+        } catch (e) {
+          clearSession();
+          return null;
+        }
+      }
+
+      function showView(name) {
+        state.view = name;
+        views.forEach(function (view) { view.hidden = view.dataset.view !== name; });
+        window.scrollTo(0, 0);
+      }
+
+      function appendParagraphs(target, lines) {
+        target.replaceChildren();
+        (lines || []).forEach(function (line) {
+          var p = document.createElement('p');
+          p.textContent = line;
+          target.appendChild(p);
+        });
+      }
+
+      function renderQuestion() {
+        var question = QUESTIONS[state.index];
+        var total = QUESTIONS.length;
+        document.getElementById('progressLabel').textContent = pad(state.index + 1) + ' / ' + pad(total);
+        document.getElementById('progressBar').style.width = ((state.index + 1) / total * 100) + '%';
+        document.getElementById('questionIndex').textContent = '调查现场 ' + pad(question.id);
+        document.getElementById('questionTitle').textContent = question.title;
+        document.getElementById('questionBody').textContent = question.body;
+        nextButton.textContent = state.index === total - 1 ? '查看结果' : '下一题';
+        nextButton.disabled = state.selected === null;
+        prevButton.disabled = state.index === 0;
+        quizBackButton.disabled = false;
+
+        var options = document.getElementById('options');
+        options.replaceChildren();
+        Object.keys(question.options).forEach(function (letter) {
+          var button = document.createElement('button');
+          var label = document.createElement('span');
+          var text = document.createElement('span');
+          button.type = 'button';
+          button.className = 'option';
+          button.dataset.choice = letter;
+          button.setAttribute('aria-pressed', String(state.selected === letter));
+          label.className = 'option-letter';
+          label.textContent = letter;
+          text.textContent = question.options[letter].text;
+          button.append(label, text);
+          button.addEventListener('click', function () {
+            state.selected = letter;
+            Array.prototype.forEach.call(options.children, function (item) {
+              item.setAttribute('aria-pressed', String(item === button));
+              item.classList.toggle('stamped', item === button);
+            });
+            nextButton.disabled = false;
+            saveSession();
+          });
+          options.appendChild(button);
+        });
+      }
+
+      function addDiagnosisItem(target, label, value) {
+        var item = document.createElement('div');
+        var title = document.createElement('span');
+        var copy = document.createElement('p');
+        item.className = 'diagnosis-item';
+        title.className = 'diagnosis-label';
+        title.textContent = label;
+        copy.className = 'diagnosis-value';
+        copy.textContent = value;
+        item.append(title, copy);
+        target.appendChild(item);
+      }
+
+      function openMatch(match, index) {
+        document.getElementById('matchDialogNumber').textContent = pad(index + 1) + ' / 03';
+        document.getElementById('matchDialogTitle').textContent = match.name;
+        document.getElementById('matchDialogBlurb').textContent = match.blurb;
+        var details = document.getElementById('matchDialogDetails');
+        details.replaceChildren();
+        [
+          ['你们的共同点', match.common],
+          ['你们的区别', match.diff],
+          [match.noteLabel, match.note]
+        ].forEach(function (entry) {
+          var block = document.createElement('div');
+          var label = document.createElement('span');
+          var copy = document.createElement('p');
+          block.className = 'match-detail';
+          label.className = 'match-label';
+          label.textContent = entry[0];
+          copy.textContent = entry[1];
+          block.append(label, copy);
+          details.appendChild(block);
+        });
+        matchDialog.showModal();
+      }
+
+      function renderResult(result) {
+        var persona = PERSONAS[result.key];
+        document.getElementById('personaDim').textContent = persona.dimLabel;
+        document.getElementById('personaName').textContent = persona.name;
+        appendParagraphs(document.getElementById('personaIntro'), persona.intro);
+        var image = document.getElementById('personaImage');
+        image.src = persona.img;
+        image.alt = persona.name + '像素侦探形象';
+        image.onerror = function () {
+          image.removeAttribute('src');
+          image.alt = persona.name + '（形象加载失败）';
+        };
+
+        appendParagraphs(document.getElementById('aiCopy'), persona.ai);
+
+        var diagnosis = persona.diagnosis;
+        var grid = document.getElementById('diagnosisGrid');
+        grid.replaceChildren();
+        addDiagnosisItem(grid, '核心技能', diagnosis.core);
+        addDiagnosisItem(grid, '隐藏技能', diagnosis.hidden);
+        addDiagnosisItem(grid, '致命弱点', diagnosis.weakness);
+
+        var stats = document.getElementById('diagnosisStats');
+        stats.replaceChildren();
+        diagnosis.stats.forEach(function (stat) {
+          var term = document.createElement('dt');
+          var value = document.createElement('dd');
+          var row = document.createElement('div');
+          row.className = 'stat';
+          term.textContent = stat.label;
+          value.textContent = stat.value;
+          row.append(term, value);
+          stats.appendChild(row);
+        });
+
+        var matchList = document.getElementById('matchList');
+        matchList.replaceChildren();
+        persona.matches.forEach(function (match, index) {
+          var button = document.createElement('button');
+          var number = document.createElement('span');
+          var body = document.createElement('span');
+          var name = document.createElement('span');
+          var blurb = document.createElement('span');
+          button.type = 'button';
+          button.className = 'match-item';
+          number.className = 'match-number';
+          number.textContent = pad(index + 1);
+          name.className = 'match-name';
+          name.textContent = match.name;
+          blurb.className = 'match-blurb';
+          blurb.textContent = match.blurb;
+          body.append(name, blurb);
+          button.append(number, body);
+          button.addEventListener('click', function () { openMatch(match, index); });
+          matchList.appendChild(button);
+        });
+      }
+
+      function loadImage(src) {
+        return new Promise(function (resolve, reject) {
+          var image = new Image();
+          image.onload = function () { resolve(image); };
+          image.onerror = reject;
+          image.src = src;
+        });
+      }
+
+      function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight) {
+        var line = '';
+        var cursorY = y;
+        Array.from(String(text)).forEach(function (char) {
+          var next = line + char;
+          if (line && ctx.measureText(next).width > maxWidth) {
+            ctx.fillText(line, x, cursorY);
+            cursorY += lineHeight;
+            line = char;
+          } else {
+            line = next;
+          }
+        });
+        if (line) { ctx.fillText(line, x, cursorY); cursorY += lineHeight; }
+        return cursorY;
+      }
+
+      function investigatorNumber(key) {
+        return 'S-' + String(PERSONA_ORDER.indexOf(key) + 11).padStart(3, '0');
+      }
+
+      async function drawShareCard(result) {
+        var canvas = document.getElementById('shareCanvas');
+        var ctx = canvas.getContext('2d');
+        var persona = PERSONAS[result.key];
+        var lines = persona.shareLines[Math.floor(Math.random() * persona.shareLines.length)];
+        var accent = '#8D302C';
+        var ink = '#171513';
+        canvas.width = 1080;
+        canvas.height = 1440;
+
+        ctx.fillStyle = '#F5EFE5';
+        ctx.fillRect(0, 0, 1080, 1440);
+        ctx.strokeStyle = 'rgba(141,48,44,.10)';
+        ctx.lineWidth = 1;
+        for (var y = 28; y < 1440; y += 26) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1080, y); ctx.stroke();
+        }
+        ctx.fillStyle = accent;
+        ctx.fillRect(52, 52, 976, 94);
+        ctx.fillStyle = '#fffaf2';
+        ctx.font = '700 28px "PingFang SC", sans-serif';
+        ctx.fillText('XBTI · AI DETECTIVE ARCHIVE', 86, 111);
+        ctx.textAlign = 'right';
+        ctx.fillText('FILE / ' + investigatorNumber(result.key), 994, 111);
+        ctx.textAlign = 'left';
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(52, 146, 976, 1242);
+
+        ctx.fillStyle = accent;
+        ctx.font = '700 25px "PingFang SC", sans-serif';
+        ctx.fillText('人格鉴定结果', 86, 205);
+        ctx.fillStyle = ink;
+        ctx.font = '700 58px "Songti SC", serif';
+        var nameBottom = drawWrappedText(ctx, persona.name, 86, 274, 520, 70);
+        ctx.fillStyle = accent;
+        ctx.font = '700 27px "PingFang SC", sans-serif';
+        ctx.fillText(persona.dimLabel, 86, nameBottom + 18);
+
+        var portrait = await loadImage(persona.img);
+        var px = 700, py = 176, pw = 260, ph = 260;
+        ctx.fillStyle = '#0f0c0a';
+        ctx.fillRect(px, py, pw, ph);
+        var scale = Math.min(pw / portrait.width, ph / portrait.height);
+        var dw = portrait.width * scale, dh = portrait.height * scale;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(portrait, px + (pw - dw) / 2, py + (ph - dh) / 2, dw, dh);
+
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(86, 520); ctx.lineTo(994, 520); ctx.stroke();
+        ctx.fillStyle = accent;
+        ctx.font = '700 24px "PingFang SC", sans-serif';
+        ctx.fillText('核心侧写 / PROFILE', 86, 565);
+        ctx.fillStyle = ink;
+        ctx.font = '400 31px "Songti SC", serif';
+        var copyY = 612;
+        lines.forEach(function (line) { copyY = drawWrappedText(ctx, line, 86, copyY, 900, 48) + 12; });
+
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(86, 900); ctx.lineTo(994, 900); ctx.stroke();
+        ctx.fillStyle = ink;
+        ctx.font = '700 30px "Songti SC", serif';
+        var aiY = 955;
+        persona.ai.forEach(function (line) { aiY = drawWrappedText(ctx, line, 112, aiY, 840, 45) + 10; });
+
+        ctx.fillStyle = accent;
+        ctx.font = '700 24px "PingFang SC", sans-serif';
+        ctx.fillText('相似侦探 / MATCHES', 86, 1180);
+        ctx.fillStyle = ink;
+        ctx.font = '500 27px "Songti SC", serif';
+        persona.matches.forEach(function (match, index) {
+          ctx.fillText(pad(index + 1) + '  ' + match.name, 86 + index * 300, 1224);
+        });
+        ctx.fillStyle = ink;
+        ctx.font = '700 25px "PingFang SC", sans-serif';
+        ctx.fillText('《达芬奇密码》侦探人格测试', 86, 1330);
+        ctx.fillStyle = 'rgba(23,21,19,.58)';
+        ctx.font = '400 20px "PingFang SC", sans-serif';
+        ctx.fillText('10 个调查现场 · 8 种人格 · 仅供娱乐', 86, 1363);
+        return canvas;
+      }
+
+      function goHome() {
+        clearTimeout(analyzeTimer);
+        clearSession();
+        state = { view: 'home', index: 0, selected: null, answers: [], result: null };
+        showView('home');
+      }
+
+      function startAnalyzing() {
+        state.result = XBTIScoring.calculate(state.answers, QUESTIONS);
+        saveSession();
+        showView('analyzing');
+        var items = Array.prototype.slice.call(document.querySelectorAll('#analyzingList li'));
+        items.forEach(function (item) { item.classList.remove('active'); });
+        var step = 0;
+        function tick() {
+          if (step < items.length) items[step].classList.add('active');
+          step += 1;
+          if (step <= items.length) {
+            analyzeTimer = setTimeout(tick, 550);
+          } else {
+            renderResult(state.result);
+            clearSession();
+            showView('result');
+          }
+        }
+        tick();
+      }
+
+      startButton.addEventListener('click', function () {
+        showView('brief');
+      });
+
+      briefBackButton.addEventListener('click', function () { showView('home'); });
+
+      beginButton.addEventListener('click', function () {
+        state = { view: 'quiz', index: 0, selected: null, answers: [], result: null };
+        renderQuestion();
+        showView('quiz');
+        saveSession();
+      });
+
+      function goPrev() {
+        if (state.index === 0) {
+          showView('brief');
+          return;
+        }
+        state.answers[state.index] = state.selected;
+        state.index -= 1;
+        state.selected = state.answers[state.index] || null;
+        renderQuestion();
+        saveSession();
+      }
+
+      prevButton.addEventListener('click', goPrev);
+      quizBackButton.addEventListener('click', goPrev);
+
+      nextButton.addEventListener('click', function () {
+        if (state.selected === null) return;
+        state.answers[state.index] = state.selected;
+        state.answers = state.answers.slice(0, state.index + 1);
+        if (state.index < QUESTIONS.length - 1) {
+          state.index += 1;
+          state.selected = state.answers[state.index] || null;
+          renderQuestion();
+          saveSession();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+        startAnalyzing();
+      });
+
+      restartButton.addEventListener('click', goHome);
+      restartBottomButton.addEventListener('click', goHome);
+      document.getElementById('closeDialogButton').addEventListener('click', function () { matchDialog.close(); });
+      matchDialog.addEventListener('click', function (event) {
+        if (event.target === matchDialog) matchDialog.close();
+      });
+
+      purchaseButton.addEventListener('click', function () {
+        if (PURCHASE_URL) {
+          window.open(PURCHASE_URL, '_blank', 'noopener');
+          return;
+        }
+        showToast('购买链接准备中');
+      });
+
+      shareButton.addEventListener('click', async function () {
+        if (!state.result) return;
+        shareButton.disabled = true;
+        try {
+          var canvas = await drawShareCard(state.result);
+          var link = document.createElement('a');
+          link.download = 'XBTI-' + investigatorNumber(state.result.key) + '.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          showToast('分享卡已生成');
+        } catch (e) {
+          showToast('分享卡生成失败，请稍后重试');
+        } finally {
+          shareButton.disabled = false;
+        }
+      });
+
+      var restored = loadSession();
+      if (restored && restored.view === 'quiz') {
+        state.index = Math.min(restored.index || 0, QUESTIONS.length - 1);
+        state.answers = restored.answers || [];
+        state.selected = restored.selected || state.answers[state.index] || null;
+        renderQuestion();
+        showView('quiz');
+      } else {
+        showView('home');
+      }
+    })();
+  </script>
+</body>
+</html>
