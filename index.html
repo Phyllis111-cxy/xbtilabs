@@ -608,6 +608,9 @@
       var PURCHASE_URL = '';
       var STORAGE_KEY = 'xbti-davinci-session-v1';
       var CONTENT_VERSION = '2026-08-05';
+      var STATS_NS = 'xbtilabs_icu';
+      var STATS_API = 'https://api.counterapi.dev/v1/' + STATS_NS + '/';
+      var STATS_ONCE_KEY = 'xbti-davinci-stats-reported-v1';
 
       var state = {
         view: 'home',
@@ -951,6 +954,18 @@
         showView('home');
       }
 
+      function reportResultStats(personaKey) {
+        // Fire-and-forget; never block the result page if stats fail.
+        try {
+          if (!personaKey || PERSONA_ORDER.indexOf(personaKey) < 0) return;
+          if (sessionStorage.getItem(STATS_ONCE_KEY) === personaKey) return;
+          sessionStorage.setItem(STATS_ONCE_KEY, personaKey);
+          var opts = { method: 'GET', mode: 'cors', cache: 'no-store' };
+          fetch(STATS_API + 'total/up', opts).catch(function () {});
+          fetch(STATS_API + encodeURIComponent(personaKey) + '/up', opts).catch(function () {});
+        } catch (e) {}
+      }
+
       function startAnalyzing() {
         state.result = XBTIScoring.calculate(state.answers, QUESTIONS);
         saveSession();
@@ -965,6 +980,7 @@
             analyzeTimer = setTimeout(tick, 550);
           } else {
             renderResult(state.result);
+            reportResultStats(state.result && state.result.key);
             clearSession();
             showView('result');
           }
