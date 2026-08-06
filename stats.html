@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>XBTI 测试统计</title>
+  <style>
+    :root {
+      --bg: #05080c;
+      --panel: #16120f;
+      --title: #f4ebe0;
+      --body: #d9cfc3;
+      --muted: #9a8f84;
+      --gold: #c6a15b;
+      --border: #3a322b;
+      --serif: "Songti SC", "STSong", "Noto Serif CJK SC", serif;
+      --sans: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--body);
+      font-family: var(--sans);
+      padding: 28px 18px 48px;
+    }
+    .wrap { width: min(100%, 520px); margin: 0 auto; }
+    h1 {
+      margin: 0 0 8px;
+      color: var(--title);
+      font: 700 28px/1.25 var(--serif);
+    }
+    .sub { margin: 0 0 22px; color: var(--muted); font-size: 13px; }
+    .card {
+      border: 2px solid var(--border);
+      background: var(--panel);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 3px 3px 0 #000;
+    }
+    .total {
+      font-size: 42px;
+      color: var(--gold);
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .label { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px dashed rgba(154,143,132,.25);
+      font-size: 14px;
+    }
+    .row:last-child { border-bottom: 0; }
+    .name { color: var(--title); }
+    .count { color: var(--gold); font-weight: 700; min-width: 2.5em; text-align: right; }
+    .pct { color: var(--muted); min-width: 3.5em; text-align: right; }
+    .bar {
+      grid-column: 1 / -1;
+      height: 6px;
+      background: #2a241f;
+      margin-top: -4px;
+      margin-bottom: 4px;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--gold);
+    }
+    .actions { display: grid; gap: 10px; margin-top: 18px; }
+    button, a.btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border: 2px solid #8a7040;
+      background: #1a1512;
+      color: var(--title);
+      text-decoration: none;
+      cursor: pointer;
+      font: inherit;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .err { color: #d88; font-size: 13px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>测试数据统计</h1>
+    <p class="sub">《达芬奇密码》侦探人格测试 · 仅统计完成测试次数与人格分布</p>
+
+    <div class="card">
+      <div class="label">完成测试总人数</div>
+      <div class="total" id="totalCount">—</div>
+    </div>
+
+    <div class="card" id="list"></div>
+    <p class="err" id="error" hidden></p>
+
+    <div class="actions">
+      <button type="button" id="refreshBtn">刷新数据</button>
+      <a class="btn" href="./">返回测试首页</a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var NS = 'xbtilabs_icu';
+      var API = 'https://api.counterapi.dev/v1/' + NS + '/';
+      var LABELS = {
+        o: '人形线索扫描仪',
+        l: '行走的因果关系表',
+        i: '潜台词全文背诵选手',
+        a: '不看攻略硬闯王',
+        v: '赛博答案打假人',
+        s: '现场唯一正常人',
+        villain: '幕后黑手预备役',
+        committee: '「来都来了」反对委员会'
+      };
+      var KEYS = Object.keys(LABELS);
+
+      function fetchCount(key) {
+        return fetch(API + encodeURIComponent(key) + '/', { cache: 'no-store', mode: 'cors' })
+          .then(function (res) {
+            if (res.status === 404) return 0;
+            if (!res.ok) throw new Error('bad status ' + res.status);
+            return res.json();
+          })
+          .then(function (data) {
+            if (typeof data === 'number') return data;
+            return Number(data && data.count) || 0;
+          })
+          .catch(function () { return 0; });
+      }
+
+      function render() {
+        var err = document.getElementById('error');
+        err.hidden = true;
+        document.getElementById('totalCount').textContent = '…';
+        document.getElementById('list').textContent = '加载中…';
+
+        Promise.all([fetchCount('total')].concat(KEYS.map(fetchCount)))
+          .then(function (values) {
+            var total = values[0];
+            var counts = values.slice(1);
+            var sumPersona = counts.reduce(function (a, b) { return a + b; }, 0);
+            var base = total > 0 ? total : sumPersona;
+            document.getElementById('totalCount').textContent = String(base);
+
+            var rows = KEYS.map(function (key, idx) {
+              var n = counts[idx];
+              var pct = base ? Math.round(n / base * 1000) / 10 : 0;
+              return { key: key, name: LABELS[key], count: n, pct: pct };
+            }).sort(function (a, b) { return b.count - a.count; });
+
+            var list = document.getElementById('list');
+            list.replaceChildren();
+            rows.forEach(function (row) {
+              var wrap = document.createElement('div');
+              wrap.className = 'row';
+              wrap.innerHTML =
+                '<span class="name"></span>' +
+                '<span class="count"></span>' +
+                '<span class="pct"></span>' +
+                '<div class="bar"><i></i></div>';
+              wrap.querySelector('.name').textContent = row.name;
+              wrap.querySelector('.count').textContent = String(row.count);
+              wrap.querySelector('.pct').textContent = row.pct + '%';
+              wrap.querySelector('i').style.width = row.pct + '%';
+              list.appendChild(wrap);
+            });
+          })
+          .catch(function () {
+            err.hidden = false;
+            err.textContent = '统计读取失败，请稍后刷新。测试本身不受影响。';
+          });
+      }
+
+      document.getElementById('refreshBtn').addEventListener('click', render);
+      render();
+    })();
+  </script>
+</body>
+</html>
